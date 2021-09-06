@@ -1,6 +1,7 @@
 #![warn(clippy::all)]
 use std::net::{TcpListener, TcpStream};
 use std::thread;
+use std::io::prelude::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener = TcpListener::bind("0.0.0.0:8080")?;
@@ -16,6 +17,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn handle_client(stream: TcpStream) {
-    dbg!("Hello");
+fn handle_client(mut stream: TcpStream) {
+
+    let mut buffer  = Vec::new();
+
+    stream.read_to_end(&mut buffer).expect("Failed to read stream into buffer");
+
+    let response = "HTTP/1.1 200 OK\r\n\r\n";
+
+    stream.write(response.as_bytes()).expect("Failed to send response");
+
+    stream.flush().expect("Failed to flush stream response");
+
+    println!("Request: {}", String::from_utf8_lossy(&buffer));
 }
