@@ -1,7 +1,11 @@
 #![warn(clippy::all)]
+#[allow(dead_code)]
 use std::net::{TcpListener, TcpStream};
 use std::thread;
 use std::io::prelude::*;
+use std::str::FromStr;
+
+mod http;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let listener = TcpListener::bind("0.0.0.0:8080")?;
@@ -29,5 +33,8 @@ fn handle_client(mut stream: TcpStream) {
 
     stream.flush().expect("Failed to flush stream response");
 
-    println!("Request: {}", String::from_utf8_lossy(&buffer));
+    let x = String::from_utf8_lossy(&buffer);
+
+    let x = http::Request::from_str(&x);
 }
+
