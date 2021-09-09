@@ -3,7 +3,7 @@
 I'm bored so I'm gonna try and make an HTTP server
 * DONE Parse Request body
 * TODO serve response
-* TODO async
+* DONE async
 * TODO proc macros like rocket
 #+begin_src rust
 #[macro_use] extern crate rocket;
