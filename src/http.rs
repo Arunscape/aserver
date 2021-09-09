@@ -20,7 +20,11 @@ struct RequestHeaders(HashMap<String, String>);
 impl FromStr for RequestHeaders {
     type Err = Box<dyn std::error::Error>;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let headers: Option<HashMap<&str, &str>> = s.lines().filter(|s| !s.is_empty()).map(|s| s.split_once(": ")).collect();
+        let headers: Option<HashMap<&str, &str>> = s
+            .lines()
+            .filter(|s| !s.is_empty())
+            .map(|s| s.split_once(": "))
+            .collect();
 
         let headers = headers.ok_or("Could not parse individual headers from the header")?;
         let headers: HashMap<String, String> = headers
@@ -47,7 +51,7 @@ impl FromStr for Request {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut ss = s.split_once("\n\n");
 
-        if ss.is_none(){
+        if ss.is_none() {
             ss = s.split_once("\r\n\r\n");
         }
 
@@ -69,23 +73,26 @@ impl FromStr for Request {
 
         let path = path.to_owned();
         let method = match method {
-            "GET" =>     Ok(RequestMethod::GET(path)),
-            "HEAD" =>    Ok(RequestMethod::HEAD(path)),
-            "POST" =>    Ok(RequestMethod::POST(path)),
-            "PUT" =>     Ok(RequestMethod::PUT(path)),
-            "DELETE" =>  Ok(RequestMethod::DELETE(path)),
+            "GET" => Ok(RequestMethod::GET(path)),
+            "HEAD" => Ok(RequestMethod::HEAD(path)),
+            "POST" => Ok(RequestMethod::POST(path)),
+            "PUT" => Ok(RequestMethod::PUT(path)),
+            "DELETE" => Ok(RequestMethod::DELETE(path)),
             "CONNECT" => Ok(RequestMethod::CONNECT(path)),
             "OPTIONS" => Ok(RequestMethod::OPTIONS(path)),
-            "TRACE" =>   Ok(RequestMethod::TRACE(path)),
-            "PATCH" =>   Ok(RequestMethod::PATCH(path)),
+            "TRACE" => Ok(RequestMethod::TRACE(path)),
+            "PATCH" => Ok(RequestMethod::PATCH(path)),
             _ => Err("Not a valid http 1.1 request method"),
         }?;
         let version = version.to_owned();
 
-        let headers: Option<HashMap<&str, &str>> = headers.filter(|s| !s.is_empty()).map(|s| {
-            dbg!(&s);
-            s.split_once(": ")
-        }).collect();
+        let headers: Option<HashMap<&str, &str>> = headers
+            .filter(|s| !s.is_empty())
+            .map(|s| {
+                dbg!(&s);
+                s.split_once(": ")
+            })
+            .collect();
         dbg!(&headers);
 
         let headers = headers.ok_or("Could not parse individual headers from the header")?;
