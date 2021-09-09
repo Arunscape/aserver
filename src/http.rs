@@ -20,7 +20,16 @@ struct RequestHeaders(HashMap<String, String>);
 impl FromStr for RequestHeaders {
     type Err = Box<dyn std::error::Error>;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        todo!()
+        let headers: Option<HashMap<&str, &str>> = s.lines().map(|s| s.split_once(": ")).collect();
+
+        let headers = headers.ok_or("Could not parse individual headers from the header")?;
+        let headers: HashMap<String, String> = headers
+            .iter()
+            .map(|(&x, &y)| (x.to_owned(), y.to_owned()))
+            .collect();
+        let headers = RequestHeaders(headers);
+
+        Ok(headers)
     }
 }
 
