@@ -20,7 +20,7 @@ struct RequestHeaders(HashMap<String, String>);
 impl FromStr for RequestHeaders {
     type Err = Box<dyn std::error::Error>;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let headers: Option<HashMap<&str, &str>> = s.lines().map(|s| s.split_once(": ")).collect();
+        let headers: Option<HashMap<&str, &str>> = s.lines().filter(|s| !s.is_empty()).map(|s| s.split_once(": ")).collect();
 
         let headers = headers.ok_or("Could not parse individual headers from the header")?;
         let headers: HashMap<String, String> = headers
@@ -45,9 +45,15 @@ impl FromStr for Request {
     type Err = Box<dyn std::error::Error>;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut s = s.split("\n\n");
+        let mut ss = s.split_once("\n\n");
 
-        let headers = s.next().ok_or("Could not parse header from request")?;
+        if ss.is_none(){
+            ss = s.split_once("\r\n\r\n");
+        }
+
+        let ss = ss.ok_or("Could not separate headers from body")?;
+
+        let headers = ss.0;
 
         let mut headers = headers.lines();
 
@@ -76,7 +82,11 @@ impl FromStr for Request {
         }?;
         let version = version.to_owned();
 
-        let headers: Option<HashMap<&str, &str>> = headers.map(|s| s.split_once(": ")).collect();
+        let headers: Option<HashMap<&str, &str>> = headers.filter(|s| !s.is_empty()).map(|s| {
+            dbg!(&s);
+            s.split_once(": ")
+        }).collect();
+        dbg!(&headers);
 
         let headers = headers.ok_or("Could not parse individual headers from the header")?;
         let headers: HashMap<String, String> = headers
@@ -84,7 +94,7 @@ impl FromStr for Request {
             .map(|(&x, &y)| (x.to_owned(), y.to_owned()))
             .collect();
         let headers = RequestHeaders(headers);
-        let body = s.next().ok_or("Could not parse body")?;
+        let body = ss.1;
         let body = body.to_owned();
 
         Ok(Self {
@@ -96,6 +106,7 @@ impl FromStr for Request {
     }
 }
 
+#[cfg(test)]
 mod test {
     use super::*;
 

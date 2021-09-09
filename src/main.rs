@@ -34,7 +34,10 @@ fn handle_client(mut stream: TcpStream) {
     stream.flush().expect("Failed to flush stream response");
 
     let x = String::from_utf8_lossy(&buffer);
+    dbg!(&x);
 
     let x = http::Request::from_str(&x);
+
+    dbg!(&x);
 }
 
